@@ -2,6 +2,7 @@
 #include <fstream>
 #include <cmath>
 #include <chrono>
+#include <queue>
 
 using namespace std;
 using namespace std::chrono;
@@ -10,150 +11,12 @@ ifstream fin ("test.in");
 ofstream fout ("test.out");
 
 
-template <typename T> class Heap{
-    ///minHeap
-    /*
-        Observatie:
-        la Heap, in intervalul de pozitii
-        [dim/2 + 1, dim]
-        am numai frunze (indexare de la 1)
-    */
-
-    private:
-        int dim;
-        T *v;
-
-        static inline int left_son(int node){
-            return node * 2;
-        }
-        static inline int right_son(int node){
-            return node * 2 + 1;
-        }
-        static inline int father(int node){
-            return node / 2;
-        }
-
-    public:
-        ~Heap(){
-            if(dim != 0){
-                delete v;
-            }
-        }
-        Heap(int N, int w[]){
-            dim = N;
-            v = new T[dim + 1];
-            v[0] = 0;
-
-            for(int i = 1; i <= N; i++){
-                v[i] = w[i];
-            }
-            for(int i = dim / 2; i >= 1; i--){
-                sift(i);
-            }
-        }
-
-        inline int getDim(){
-            return dim;
-        }
-
-        inline int mini(){
-            return v[1];
-        }
-
-        void sift(int node){
-            /*
-                ambii subarbori ai nodului au structura de heap corecta.
-                eu "cern" nodul pana la locul potrivit, interschimband
-                mereu cu cel mai mic fiu al sau
-                pana ajunge sa fie mai mic decat ambii fii
-                sau pana nu mai are fii xD
-            */
-
-            if(left_son(node) <= dim && right_son(node) <= dim){
-                ///are ambii fii
-
-                if(v[node] <= v[left_son(node)] && v[node] <= v[right_son(node)]){
-                    ///e mai mic decat ambii; ma opresc
-                    return;
-                }
-                else {
-                    if(v[left_son(node)] <= v[right_son(node)]){
-                        swap(v[node], v[left_son(node)]);
-                        sift(left_son(node));
-                        return;
-                    }
-                    else {
-                        swap(v[node], v[right_son(node)]);
-                        sift(right_son(node));
-                        return;
-                    }
-                }
-            }
-            else if(left_son(node) <= dim){
-                ///are doar un fiu, pe stanga
-
-                if(v[node] <= v[left_son(node)]){
-                    ///e mai mic decat fiul; ma opresc
-                    return;
-                }
-                else {
-                    swap(v[node], v[left_son(node)]);
-                    sift(left_son(node));
-                    return;
-                }
-            }
-            else {
-                ///nu mai are fii
-                return;
-            }
-
-        }
-
-        void pop(){
-            if(!(dim >= 1)){
-                return;
-            }
-
-            swap(v[1], v[dim]);
-            dim--;
-            sift(1);
-        }
-
-        friend istream& operator >> (istream& in, Heap& X){
-            in >> X.dim;
-            X.v = new T[X.dim + 1];
-            X.v[0] = 0;
-
-            for(int i = 1; i <= X.dim; i++){
-                in >> X.v[i];
-            }
-            for(int i = X.dim / 2; i >= 1; i--){
-                X.sift(i);
-            }
-
-
-
-            return in;
-        }
-
-        friend ostream& operator << (ostream& out, Heap const& X){
-            out << "Heap-ul are " << X.dim << " elemente: " << "\n";
-            for(int i = 1; i <= X.dim; i++){
-                out << X.v[i] << " ";
-            }
-            out << "\n";
-            return out;
-        }
-};
-
 template <typename T> class Vector{
 private:
     int dim;
     T *v;
 
 public:
-    friend class Heap<T>;
-
     ~Vector(){
         if(dim != 0){
             delete v;
@@ -165,12 +28,21 @@ public:
         v = new T[dim + 1];
         v[0] = 0;
 
-        for(int i = 0; i <= dim; i++){
+        for(int i = 1; i <= dim; i++){
             v[i] = 0;
         }
     }
+    Vector(int N, T w[]){
+        dim = N;
+        v = new T[dim + 1];
+        v[0] = 0;
 
-    void updateaza(int N, int w[]){
+        for(int i = 1; i <= dim; i++){
+            v[i] = w[i];
+        }
+    }
+
+    void updateaza(int N, T w[]){
         if(dim != 0){
             delete v;
         }
@@ -359,9 +231,13 @@ public:
 
     void heapSortUtil(int st, int dr){
         int N = dr - st + 1;
-        Heap X(N, v + st - 1);
+        priority_queue <T, vector<T>, greater<T> >X;
         for(int i = st; i <= dr; i++){
-            v[i] = X.mini();
+            X.push(v[i]);
+        }
+
+        for(int i = st; i <= dr; i++){
+            v[i] = X.top();
             X.pop();
         }
     }
@@ -477,61 +353,69 @@ void doTest(){
 
 
     if(nrIntregi) { ///nr intregi
-        Vector<int> X;
-        Vector<int> Y;
+        int N; fin >> N;
 
-        fin >> Y;
+        int *v; v = new int[N + 1];
+        v[0] = 0;
+        for(int i = 1; i <= N; i++){
+            fin >> v[i];
+        }
+
+        Vector X(N, v);
 
 
-        X = Y;
         cout << X.mergeSort() << "microsecunde pt mergeSort" << "\n";
 
-        X = Y;
+        X.updateaza(N, v);
         cout << X.radixSort() << "microsecunde pt radixSort" << "\n";
 
-        X = Y;
+        X.updateaza(N, v);
         cout << X.shellSort() << "microsecunde pt shellSort" << "\n";
 
-        X = Y;
+        X.updateaza(N, v);
         cout << X.heapSort() << "microsecunde pt heapSort" << "\n";
 
-        X = Y;
+        X.updateaza(N, v);
         cout << X.quickSort() << "microsecunde pt quickSort" << "\n";
 
-        X = Y;
+        X.updateaza(N, v);
         cout << X.insertionSort() << "microsecunde pt insertionSort" << "\n";
 
-        X = Y;
+        X.updateaza(N, v);
         cout << X.introSort() << "microsecunde pt introSort" << "\n";
 
         fout << X;
     }
     else { ///nr reale
-        Vector<double> X;
-        Vector<double> Y;
+        int N; fin >> N;
 
-        fin >> Y;
+        double *v; v = new double[N + 1];
+        v[0] = 0;
+        for(int i = 1; i <= N; i++){
+            fin >> v[i];
+        }
+
+        Vector X(N, v);
 
 
-        X = Y;
         cout << X.mergeSort() << "microsecunde pt mergeSort" << "\n";
 
-        X = Y;
+        X.updateaza(N, v);
         cout << X.radixSort() << "microsecunde pt radixSort" << "\n";
 
-        X = Y;
+        X.updateaza(N, v);
         cout << X.shellSort() << "microsecunde pt shellSort" << "\n";
 
-        X = Y;
+        X.updateaza(N, v);
         cout << X.heapSort() << "microsecunde pt heapSort" << "\n";
 
-        X = Y;
+        X.updateaza(N, v);
         cout << X.quickSort() << "microsecunde pt quickSort" << "\n";
 
-        X = Y;
+        X.updateaza(N, v);
         cout << X.insertionSort() << "microsecunde pt insertionSort" << "\n";
 
-        X = Y;
+        X.updateaza(N, v);
         cout << X.introSort() << "microsecunde pt introSort" << "\n";
 
         fout << X;
