@@ -1,11 +1,10 @@
-/*
-    baza 10
-*/
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 ifstream fin ("test.in");
 ofstream fout ("test.out");
@@ -26,7 +25,9 @@ private:
 
 public:
     ~Heap(){
-        delete v;
+        if(dim != 0){
+            delete v;
+        }
     }
     Heap(int N, int w[]){
         dim = N;
@@ -150,15 +151,30 @@ public:
     friend class Heap;
 
     ~Vector(){
-        delete v;
+        if(dim != 0){
+            delete v;
+        }
     }
-    Vector(){}
+    Vector(){dim = 0;}
     Vector(int x){
         dim = x;
         v = new T[dim + 1];
         for(int i = 0; i <= dim; i++){
             v[i] = 0;
         }
+    }
+
+    operator = (Vector &X){
+        delete v;
+
+        dim = X.dim;
+        v = new T[dim + 1];
+
+        for(int i = 1; i <= dim; i++){
+            v[i] = X.v[i];
+        }
+
+        return *this;
     }
 
     friend istream& operator >> (istream& in, Vector &X){
@@ -217,14 +233,16 @@ public:
 
     }
 
-    void radixSort(){
+    int radixSort(){
         ///doar daca T = int!
         ///altfel nu am cum
         if(!(std::is_same<T, int>::value)){
             cout << "Nu se poate RadixSort pt ca nu am numere naturale!\n";
-            return;
+            return 0;
         }
 
+
+        auto start_cronometru = high_resolution_clock::now();
 
         int mx = getMax();
 
@@ -233,6 +251,12 @@ public:
             ///cout << *(this);
 
         }
+
+
+        auto finish_cronometru = high_resolution_clock::now();
+        auto duration_cronometru = duration_cast<microseconds>(finish_cronometru - start_cronometru);
+
+        return duration_cronometru.count();
     }
 
 
@@ -244,8 +268,8 @@ public:
         ///voi crea doi vectori temporari (indexati de la 1)
         int dimSt = mij - st + 1;
         int dimDr = dr - (mij + 1) + 1;
-        auto *stArr = new int[dimSt + 1];
-        auto *drArr = new int[dimDr + 1];
+        auto *stArr = new T[dimSt + 1];
+        auto *drArr = new T[dimDr + 1];
 
         for(int i = 1; i <= dimSt; i++){
             stArr[i] = v[st + i - 1];
@@ -292,15 +316,23 @@ public:
         mergeSortUtil(mij + 1, dr);
         combina(st, mij, dr);
     }
-    void mergeSort(){
+    int mergeSort(){
+        auto start_cronometru = high_resolution_clock::now();
         mergeSortUtil(1, dim);
+        auto finish_cronometru = high_resolution_clock::now();
+        auto duration_cronometru = duration_cast<microseconds>(finish_cronometru - start_cronometru);
+
+        return duration_cronometru.count();
     }
 
 
-    void shellSort(){
+    int shellSort(){
+
+        auto start_cronometru = high_resolution_clock::now();
+
         for(int gap = dim / 2; gap >= 1; gap = gap / 2){
             for(int i = gap + 1; i <= dim; i++){
-                int temp = v[i];
+                T temp = v[i];
 
                 int j;
                 for(j = i; j - gap >= 1 && v[j - gap] > temp; j = j - gap){
@@ -309,6 +341,12 @@ public:
                 v[j] = temp;
             }
         }
+
+
+        auto finish_cronometru = high_resolution_clock::now();
+        auto duration_cronometru = duration_cast<microseconds>(finish_cronometru - start_cronometru);
+
+        return duration_cronometru.count();
     }
 
     void heapSortUtil(int st, int dr){
@@ -319,12 +357,19 @@ public:
             X.pop();
         }
     }
-    void heapSort(){
+    int heapSort(){
+        auto start_cronometru = high_resolution_clock::now();
+
         heapSortUtil(1, dim);
+
+        auto finish_cronometru = high_resolution_clock::now();
+        auto duration_cronometru = duration_cast<microseconds>(finish_cronometru - start_cronometru);
+
+        return duration_cronometru.count();
     }
 
     int partitie(int st, int dr){
-        int pivot = v[dr];
+        T pivot = v[dr];
         int lastBun = st - 1;
         for(int i = st; i <= dr; i++){
             if(v[i] < pivot){
@@ -347,13 +392,21 @@ public:
         quickSortUtil(pi + 1, dr);
     }
 
-    void quickSort(){
+    int quickSort(){
+        auto start_cronometru = high_resolution_clock::now();
+
+
         quickSortUtil(1, dim);
+
+        auto finish_cronometru = high_resolution_clock::now();
+        auto duration_cronometru = duration_cast<microseconds>(finish_cronometru - start_cronometru);
+
+        return duration_cronometru.count();
     }
 
     void insertionSortUtil(int st, int dr){
         for(int i = st; i <= dr; i++){
-            int temp = v[i];
+            T temp = v[i];
             int k = i - 1;
             while(temp < v[k] && k >= st){
                 v[k + 1] = v[k];
@@ -362,8 +415,16 @@ public:
             v[k + 1] = temp;
         }
     }
-    void insertionSort(){
+    int insertionSort(){
+        auto start_cronometru = high_resolution_clock::now();
+
         insertionSortUtil(1, dim);
+
+
+        auto finish_cronometru = high_resolution_clock::now();
+        auto duration_cronometru = duration_cast<microseconds>(finish_cronometru - start_cronometru);
+
+        return duration_cronometru.count();
     }
 
     void introSortUtil(int st, int dr, int depthLimit){
@@ -386,26 +447,97 @@ public:
         }
     }
 
-    void introSort(){
+    int introSort(){
+        auto start_cronometru = high_resolution_clock::now();
+
         int depthLimit = 2 * floor(log(dim));
         introSortUtil(1, dim, depthLimit);
+
+        auto finish_cronometru = high_resolution_clock::now();
+        auto duration_cronometru = duration_cast<microseconds>(finish_cronometru - start_cronometru);
+
+        return duration_cronometru.count();
     }
 };
 
 
+void doTest(){
+    bool nrIntregi;
+    fin >> nrIntregi;
+    ///1 = nr intregi
+    ///0 = nr reale
+
+
+    if(nrIntregi) { ///nr intregi
+        Vector<int> X;
+        Vector<int> Y;
+
+        fin >> Y;
+
+
+        X = Y;
+        cout << X.mergeSort() << "microsecunde pt mergeSort" << "\n";
+
+        X = Y;
+        cout << X.radixSort() << "microsecunde pt radixSort" << "\n";
+
+        X = Y;
+        cout << X.shellSort() << "microsecunde pt shellSort" << "\n";
+
+        X = Y;
+        cout << X.heapSort() << "microsecunde pt heapSort" << "\n";
+
+        X = Y;
+        cout << X.quickSort() << "microsecunde pt quickSort" << "\n";
+
+        X = Y;
+        cout << X.insertionSort() << "microsecunde pt insertionSort" << "\n";
+
+        X = Y;
+        cout << X.introSort() << "microsecunde pt introSort" << "\n";
+
+        fout << X;
+    }
+    else { ///nr reale
+        Vector<double> X;
+        Vector<double> Y;
+
+        fin >> Y;
+
+
+        X = Y;
+        cout << X.mergeSort() << "microsecunde pt mergeSort" << "\n";
+
+        X = Y;
+        cout << X.radixSort() << "microsecunde pt radixSort" << "\n";
+
+        X = Y;
+        cout << X.shellSort() << "microsecunde pt shellSort" << "\n";
+
+        X = Y;
+        cout << X.heapSort() << "microsecunde pt heapSort" << "\n";
+
+        X = Y;
+        cout << X.quickSort() << "microsecunde pt quickSort" << "\n";
+
+        X = Y;
+        cout << X.insertionSort() << "microsecunde pt insertionSort" << "\n";
+
+        X = Y;
+        cout << X.introSort() << "microsecunde pt introSort" << "\n";
+
+        fout << X;
+    }
+
+}
 
 int main() {
-    Vector<double> X;
-    fin >> X;
 
-    ///X.mergeSort();
-    ///X.radixSort();
-    ///X.shellSort();
-    ///X.heapSort();
-    ///X.quickSort();
-    ///X.insertionSort();
-    ///X.introSort();
+    int nrTeste;
+    fin >> nrTeste;
 
-    fout << X;
+    for(int i = 0; i < nrTeste; i++){
+        doTest();
+    }
     return 0;
 }
