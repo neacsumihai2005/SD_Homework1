@@ -1,16 +1,15 @@
 /*
     baza 10
-    (numere naturale)
 */
 #include <iostream>
 #include <fstream>
 #include <cmath>
 
-
 using namespace std;
 
 ifstream fin ("test.in");
 ofstream fout ("test.out");
+
 
 class Heap{
     ///minHeap
@@ -138,21 +137,25 @@ public:
             out << X.v[i] << " ";
         }
         out << "\n";
+        return out;
     }
 };
 
-class Vector{
+template <typename T> class Vector{
 private:
     int dim;
-    int *v;
+    T *v;
 
 public:
     friend class Heap;
 
+    ~Vector(){
+        delete v;
+    }
     Vector(){}
     Vector(int x){
         dim = x;
-        v = new int[dim + 1];
+        v = new T[dim + 1];
         for(int i = 0; i <= dim; i++){
             v[i] = 0;
         }
@@ -160,7 +163,7 @@ public:
 
     friend istream& operator >> (istream& in, Vector &X){
         in >> X.dim;
-        X.v = new int[X.dim + 1];
+        X.v = new T[X.dim + 1];
 
 
         for(int i = 1; i <= X.dim; i++){
@@ -176,10 +179,11 @@ public:
             out << X.v[i] << " ";
         }
         out << "\n";
+        return out;
     }
 
     int getMax(){
-        int mx = v[dim];
+        T mx = v[dim];
         for(int i = 1; i <= dim; i++){
             if(v[i] > mx){
                 mx = v[i];
@@ -193,7 +197,7 @@ public:
         int ct[10] = {0};
 
         for(int i = 1; i <= dim; i++){
-            int cifra = (v[i] / exp) % 10;
+            int cifra = ((int)(v[i] / exp)) % 10;
             ct[cifra]++;
         }
 
@@ -202,7 +206,7 @@ public:
         }
 
         for(int i = dim; i >= 1; i--){
-            int cifra = (v[i] / exp) % 10;
+            int cifra = ((int)(v[i] / exp)) % 10;
             output[ ct[cifra] ]= v[i];
             ct[cifra]--;
         }
@@ -214,6 +218,14 @@ public:
     }
 
     void radixSort(){
+        ///doar daca T = int!
+        ///altfel nu am cum
+        if(!(std::is_same<T, int>::value)){
+            cout << "Nu se poate RadixSort pt ca nu am numere naturale!\n";
+            return;
+        }
+
+
         int mx = getMax();
 
         for(int exp = 1; exp <= mx; exp = exp * 10){
@@ -383,7 +395,7 @@ public:
 
 
 int main() {
-    Vector X;
+    Vector<double> X;
     fin >> X;
 
     ///X.mergeSort();
@@ -392,7 +404,7 @@ int main() {
     ///X.heapSort();
     ///X.quickSort();
     ///X.insertionSort();
-    X.introSort();
+    ///X.introSort();
 
     fout << X;
     return 0;

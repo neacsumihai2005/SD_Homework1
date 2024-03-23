@@ -55,6 +55,12 @@ build CMakeFiles/RadixSort.dir/main.cpp.obj: CXX_COMPILER__RadixSort_unscanned_D
   OBJECT_DIR = CMakeFiles\RadixSort.dir
   OBJECT_FILE_DIR = CMakeFiles\RadixSort.dir
 
+build CMakeFiles/RadixSort.dir/test_input.cpp.obj: CXX_COMPILER__RadixSort_unscanned_Debug C$:/Users/ASUS/CLionProjects/RadixSort/test_input.cpp || cmake_object_order_depends_target_RadixSort
+  DEP_FILE = CMakeFiles\RadixSort.dir\test_input.cpp.obj.d
+  FLAGS = -g -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles\RadixSort.dir
+  OBJECT_FILE_DIR = CMakeFiles\RadixSort.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target RadixSort
@@ -63,7 +69,7 @@ build CMakeFiles/RadixSort.dir/main.cpp.obj: CXX_COMPILER__RadixSort_unscanned_D
 #############################################
 # Link the executable RadixSort.exe
 
-build RadixSort.exe: CXX_EXECUTABLE_LINKER__RadixSort_Debug CMakeFiles/RadixSort.dir/main.cpp.obj
+build RadixSort.exe: CXX_EXECUTABLE_LINKER__RadixSort_Debug CMakeFiles/RadixSort.dir/main.cpp.obj CMakeFiles/RadixSort.dir/test_input.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\RadixSort.dir
