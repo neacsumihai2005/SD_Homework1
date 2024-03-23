@@ -10,7 +10,7 @@ ifstream fin ("test.in");
 ofstream fout ("test.out");
 
 
-class Heap{
+template <typename T> class Heap{
     ///minHeap
     /*
         Observatie:
@@ -19,127 +19,131 @@ class Heap{
         am numai frunze (indexare de la 1)
     */
 
-private:
-    int dim;
-    int *v;
+    private:
+        int dim;
+        T *v;
 
-public:
-    ~Heap(){
-        if(dim != 0){
-            delete v;
+        static inline int left_son(int node){
+            return node * 2;
         }
-    }
-    Heap(int N, int w[]){
-        dim = N;
-        v = new int[dim + 1];
-        for(int i = 1; i <= N; i++){
-            v[i] = w[i];
+        static inline int right_son(int node){
+            return node * 2 + 1;
         }
-        for(int i = dim / 2; i >= 1; i--){
-            sift(i);
+        static inline int father(int node){
+            return node / 2;
         }
-    }
 
-    int getDim(){
-        return dim;
-    }
-
-    inline int left_son(int node){
-        return node * 2;
-    }
-    inline int right_son(int node){
-        return node * 2 + 1;
-    }
-    inline int father(int node){
-        return node / 2;
-    }
-    inline int mini(){
-        return v[1];
-    }
-
-    void sift(int node){
-        /*
-            ambii subarbori ai nodului au structura de heap corecta.
-            eu "cern" nodul pana la locul potrivit, interschimband
-            mereu cu cel mai mic fiu al sau
-            pana ajunge sa fie mai mic decat ambii fii
-            sau pana nu mai are fii xD
-        */
-
-        if(left_son(node) <= dim && right_son(node) <= dim){
-            ///are ambii fii
-
-            if(v[node] <= v[left_son(node)] && v[node] <= v[right_son(node)]){
-                ///e mai mic decat ambii; ma opresc
-                return;
+    public:
+        ~Heap(){
+            if(dim != 0){
+                delete v;
             }
-            else {
-                if(v[left_son(node)] <= v[right_son(node)]){
+        }
+        Heap(int N, int w[]){
+            dim = N;
+            v = new T[dim + 1];
+            v[0] = 0;
+
+            for(int i = 1; i <= N; i++){
+                v[i] = w[i];
+            }
+            for(int i = dim / 2; i >= 1; i--){
+                sift(i);
+            }
+        }
+
+        inline int getDim(){
+            return dim;
+        }
+
+        inline int mini(){
+            return v[1];
+        }
+
+        void sift(int node){
+            /*
+                ambii subarbori ai nodului au structura de heap corecta.
+                eu "cern" nodul pana la locul potrivit, interschimband
+                mereu cu cel mai mic fiu al sau
+                pana ajunge sa fie mai mic decat ambii fii
+                sau pana nu mai are fii xD
+            */
+
+            if(left_son(node) <= dim && right_son(node) <= dim){
+                ///are ambii fii
+
+                if(v[node] <= v[left_son(node)] && v[node] <= v[right_son(node)]){
+                    ///e mai mic decat ambii; ma opresc
+                    return;
+                }
+                else {
+                    if(v[left_son(node)] <= v[right_son(node)]){
+                        swap(v[node], v[left_son(node)]);
+                        sift(left_son(node));
+                        return;
+                    }
+                    else {
+                        swap(v[node], v[right_son(node)]);
+                        sift(right_son(node));
+                        return;
+                    }
+                }
+            }
+            else if(left_son(node) <= dim){
+                ///are doar un fiu, pe stanga
+
+                if(v[node] <= v[left_son(node)]){
+                    ///e mai mic decat fiul; ma opresc
+                    return;
+                }
+                else {
                     swap(v[node], v[left_son(node)]);
                     sift(left_son(node));
                     return;
                 }
-                else {
-                    swap(v[node], v[right_son(node)]);
-                    sift(right_son(node));
-                    return;
-                }
-            }
-        }
-        else if(left_son(node) <= dim){
-            ///are doar un fiu, pe stanga
-
-            if(v[node] <= v[left_son(node)]){
-                ///e mai mic decat fiul; ma opresc
-                return;
             }
             else {
-                swap(v[node], v[left_son(node)]);
-                sift(left_son(node));
+                ///nu mai are fii
                 return;
             }
-        }
-        else {
-            ///nu mai are fii
-            return;
+
         }
 
-    }
+        void pop(){
+            if(!(dim >= 1)){
+                return;
+            }
 
-    void pop(){
-        if(!(dim >= 1)){
-            return;
+            swap(v[1], v[dim]);
+            dim--;
+            sift(1);
         }
 
-        swap(v[1], v[dim]);
-        dim--;
-        sift(1);
-    }
+        friend istream& operator >> (istream& in, Heap& X){
+            in >> X.dim;
+            X.v = new T[X.dim + 1];
+            X.v[0] = 0;
 
-    friend istream& operator >> (istream& in, Heap& X){
-        in >> X.dim;
-        X.v = new int[X.dim + 1];
+            for(int i = 1; i <= X.dim; i++){
+                in >> X.v[i];
+            }
+            for(int i = X.dim / 2; i >= 1; i--){
+                X.sift(i);
+            }
 
-        for(int i = 1; i <= X.dim; i++){
-            in >> X.v[i];
+
+
+            return in;
         }
-        for(int i = X.dim / 2; i >= 1; i--){
-            X.sift(i);
+
+        friend ostream& operator << (ostream& out, Heap const& X){
+            out << "Heap-ul are " << X.dim << " elemente: " << "\n";
+            for(int i = 1; i <= X.dim; i++){
+                out << X.v[i] << " ";
+            }
+            out << "\n";
+            return out;
         }
-
-
-
-        return in;
-    }
-
-    friend ostream& operator << (ostream& out, Heap const& X){
-        out << "Heap-ul are " << X.dim << " elemente: " << "\n";
-        for(int i = 1; i <= X.dim; i++){
-            out << X.v[i] << " ";
-        }
-        out << "\n";
-        return out;
-    }
 };
 
 template <typename T> class Vector{
@@ -148,7 +152,7 @@ private:
     T *v;
 
 public:
-    friend class Heap;
+    friend class Heap<T>;
 
     ~Vector(){
         if(dim != 0){
@@ -159,27 +163,31 @@ public:
     Vector(int x){
         dim = x;
         v = new T[dim + 1];
+        v[0] = 0;
+
         for(int i = 0; i <= dim; i++){
             v[i] = 0;
         }
     }
 
-    operator = (Vector &X){
-        delete v;
-
-        dim = X.dim;
-        v = new T[dim + 1];
-
-        for(int i = 1; i <= dim; i++){
-            v[i] = X.v[i];
+    void updateaza(int N, int w[]){
+        if(dim != 0){
+            delete v;
         }
 
-        return *this;
+        dim = N;
+        v = new T[dim + 1];
+        v[0] = 0;
+
+        for(int i = 1; i <= N; i++){
+            v[i] = w[i];
+        }
     }
 
     friend istream& operator >> (istream& in, Vector &X){
         in >> X.dim;
         X.v = new T[X.dim + 1];
+        X.v[0] = 0;
 
 
         for(int i = 1; i <= X.dim; i++){
